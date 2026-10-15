@@ -1,0 +1,14 @@
+# The adjoint method on a thrown ball. The simulator and hand-written adjoints
+# are NumPy; JAX is only used to check them against reverse-mode autodiff.
+
+numpy>=1.26
+matplotlib>=3.8
+
+# --- Autodiff check ------------------------------------------------------------
+jax[cpu]>=0.4.30
+jaxlib>=0.4.30
+
+# --- Notebook -----------------------------------------------------------------
+# ipywidgets provides the sliders in notebooks/adjoint_explained.ipynb.
+jupyterlab>=4.0
+ipywidgets>=8.1
