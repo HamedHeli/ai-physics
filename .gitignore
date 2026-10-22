@@ -4,4 +4,4 @@ __pycache__/
 *.pyc
 
 # Training logs
-data-free-reduced-kinematics/experiments/*.log
+03-reduced-order-modeling/data-free-reduced-kinematics/experiments/*.log
