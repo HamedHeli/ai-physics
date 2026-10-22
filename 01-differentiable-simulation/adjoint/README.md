@@ -66,7 +66,7 @@ autodiff gives the same answer.
 ## Run
 
 ```bash
-cd adjoint
+cd 01-differentiable-simulation/adjoint
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 jupyter lab notebooks/adjoint_explained.ipynb

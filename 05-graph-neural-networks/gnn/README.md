@@ -41,7 +41,7 @@ gnn/
 ## Run
 
 ```bash
-cd gnn
+cd 05-graph-neural-networks/gnn
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 jupyter lab notebooks/gnn_explained.ipynb
