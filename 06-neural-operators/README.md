@@ -39,6 +39,15 @@ and how the FNO relates to the adjoint method.
 (`64×64×4 → P → 64×64×8 → Fourier layers → Q → 64×64×2`), starting from an 8-number example of Fourier series and
 convolution.
 
+[`transolver/`](transolver/): Transolver on a problem the FNO cannot take directly, steady heat flow in an
+**L-shaped plate with a cooling hole that moves from sample to sample**, given as a cloud of scattered points. With
+32 points, 16 channels, 2 heads and 8 slices, the notebook
+[`transolver_explained.ipynb`](transolver/notebooks/transolver_explained.ipynb) shows every tensor of
+Physics-Attention (slice weights → slice tokens → attention among slices → deslice) with a worked numeric example per
+step, then trains the model, tests the paper's "slices are physical states" claim (in this small model they are
+mostly learned soft regions; the geometry travels through the slice tokens), evaluates the same weights on 32 to
+2000 points, checks the PDE residual of the prediction, and ends with Transolver++ and an FNO vs Transolver table.
+
 **FNO and the adjoint method.** They are not the same idea: the FNO is trained by ordinary backprop on input/output
 pairs and solves no adjoint equation. They meet in two places: (1) the FFT is unitary, so its adjoint is the inverse
 FFT and backprop through a Fourier layer is another Fourier layer; (2) a trained FNO is a cheap differentiable
@@ -49,7 +58,8 @@ trustworthy in directions the training data covered (section 9 of the notebook s
 
 - ← [02 Physics-informed NNs](../02-physics-informed-neural-networks/): from one solution to the whole operator.
 - ← [05 Graph neural networks](../05-graph-neural-networks/): message passing on a mesh is a discretized kernel
-  integral; Transolver replaces it with global attention over learned slices.
+  integral; Transolver replaces it with global attention over learned slices. Both take point clouds; GNS talks
+  through local edges, Transolver through a few global slice tokens.
 - ↔ [01 Differentiable simulation](../01-differentiable-simulation/): a trained FNO is a differentiable stand-in
   for the solver; gradients through it replace an adjoint solve, if they are accurate.
 - → [07 Transformers](../07-transformers/): PDE-Transformer scales attention-based surrogates further.
