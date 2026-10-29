@@ -25,6 +25,16 @@ space fits on screen.
 9. how the FNO relates to the **adjoint method**: the FFT's adjoint is the inverse FFT, and the gradient of an
    objective through the trained FNO is compared with the gradient through the differentiable solver.
 
+### The 2D version
+
+[`notebooks/fno2d_explained.ipynb`](notebooks/fno2d_explained.ipynb) is the same walk-through on a **64 × 64
+velocity field** (2D viscous Burgers): `64×64×4 [u, v, x, y] → P → 64×64×8 → 4 Fourier layers → Q → 64×64×2`.
+It opens with Fourier and convolution from scratch on 8 numbers (what "converting to waves" means, why an "upstream"
+rule is a convolution, and why that becomes one multiplication per wave), then draws every stage as one image per
+channel: the input as both a `64×64×4` tensor and a `4096×4` matrix, the lift `P`, the 2D FFT of each channel with
+the kept low modes boxed, the spectral weights `R` for one mode, the inverse FFT, `W`, GELU and `Q`, each with a worked
+number. Test error is about 8% with 8 channels (about 5% with 16); training takes a few minutes on a CPU.
+
 The sliders need a running Jupyter kernel. The saved outputs (including a static version of the explorer) render on
 GitHub.
 
@@ -45,11 +55,14 @@ learned how the output responds to a constant shift. Section 9 explains it.
 fno/
 ├── src/
 │   ├── physics.py     Burgers' equation: random initial conditions, pseudo-spectral solver, datasets
+│   ├── physics2d.py   2D Burgers (velocity field u, v) on a 64×64 periodic grid
 │   ├── model.py       FNO-1D (P, Fourier layers, Q); apply_with_trace returns every intermediate tensor
-│   ├── training.py    relative L2 loss, Adam loop with snapshots, evaluation at any resolution
-│   └── visualize.py   annotated heatmaps and the one-layer flow figure
+│   ├── model2d.py     FNO-2D, same structure, two corner blocks of kept modes
+│   ├── training.py    relative L2 loss, Adam loop with snapshots, evaluation (1D and 2D)
+│   └── visualize.py   annotated heatmaps, the one-layer flow figures (1D and 2D)
 ├── notebooks/
-│   └── fno_explained.ipynb
+│   ├── fno_explained.ipynb     1D, 32 points: every number
+│   └── fno2d_explained.ipynb   2D, 64×64: every channel image
 └── requirements.txt
 ```
 

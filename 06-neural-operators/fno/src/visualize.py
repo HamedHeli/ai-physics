@@ -91,3 +91,59 @@ def field(ax, x, y, label=None, **kw):
     """A function on the periodic grid, drawn with markers at the grid points."""
     ax.plot(x, y, marker=".", ms=4, label=label, **kw)
     ax.set_xlim(0, 1)
+
+
+# --- 2D helpers -----------------------------------------------------------------------------------
+
+
+def image(ax, F, title="", cmap="RdBu_r", vmax=None):
+    """One ``(n, n)`` field indexed ``[x, y]``, drawn with x to the right and y up."""
+    F = np.asarray(F)
+    vmax = vmax if vmax is not None else max(float(np.abs(F).max()), 1e-6)
+    vmin = 0 if cmap in ("magma", "viridis") else -vmax
+    ax.imshow(F.T, origin="lower", cmap=cmap, vmin=vmin, vmax=vmax, extent=[0, 1, 0, 1])
+    ax.set_xticks([]), ax.set_yticks([])
+    ax.set_title(title, fontsize=8)
+
+
+def spectrum_image(ax, v_hat, m, title=""):
+    """``log10 |v_hat|`` of one channel's ``rfft2`` ``(n, n/2+1)``, k_x centred, with the kept modes boxed."""
+    S = np.fft.fftshift(np.abs(np.asarray(v_hat)), axes=0)
+    n = S.shape[0]
+    ax.imshow(np.log10(S + 1e-6).T, origin="lower", cmap="magma", vmin=-4,
+              extent=[-n // 2 - 0.5, n // 2 - 0.5, -0.5, S.shape[1] - 0.5], aspect="auto")
+    ax.add_patch(Rectangle((-m - 0.5, -0.5), 2 * m, m, fill=False, ec="cyan", lw=1.5))
+    ax.set_xticks([-n // 2, 0, n // 2 - 1]), ax.set_yticks([0, S.shape[1] - 1])
+    ax.tick_params(labelsize=6)
+    ax.set_title(title, fontsize=8)
+
+
+def layer_flow_2d(tr, t: int, m: int, title=""):
+    """One 2D Fourier layer: one row per stage, one column per channel.
+
+    Rows: input ``v_t``, ``log |FFT|`` (kept modes boxed), ``K v`` (global path),
+    ``W v + b`` (local path), the sum, and ``v_{t+1}``.
+    """
+    v_in = np.asarray(tr.lifted if t == 0 else tr.v[t - 1])
+    d = v_in.shape[-1]
+    last = t == tr.v.shape[0] - 1
+    rows = [("v_%d (input)" % t, v_in), ("log|FFT|", np.asarray(tr.v_hat[t])),
+            ("K v  (global)", np.asarray(tr.spectral[t])), ("W v + b  (local)", np.asarray(tr.local[t])),
+            ("K v + W v + b", np.asarray(tr.pre_act[t])),
+            ("v_%d = %s" % (t + 1, "no act." if last else "GELU"), np.asarray(tr.v[t]))]
+    fig, axes = plt.subplots(len(rows), d, figsize=(1.75 * d + 1.2, 1.75 * len(rows) + 0.6))
+    for r, (name, T) in enumerate(rows):
+        vmax = None if r == 1 else float(np.abs(T).max())
+        for c in range(d):
+            ax = axes[r, c]
+            if r == 1:
+                spectrum_image(ax, T[..., c], m)
+            else:
+                image(ax, T[..., c], vmax=vmax)
+            if r == 0:
+                ax.set_title(f"channel c{c}", fontsize=9)
+        axes[r, 0].set_ylabel(name, fontsize=9)
+        axes[r, 0].yaxis.set_visible(True)
+    fig.suptitle(title or f"2D Fourier layer {t + 1}", fontsize=12, weight="bold", x=0.02, ha="left")
+    plt.tight_layout()
+    return fig
