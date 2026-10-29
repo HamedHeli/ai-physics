@@ -59,7 +59,7 @@ If the nodes are not clickable in your viewer (GitHub sometimes disables Mermaid
 | 4 | [03 Reduced-order modeling](03-reduced-order-modeling/) | [Chen+ 2023] CROM · [Sharp+ 2023] Data-free reduced-order kinematics | [`data-free-reduced-kinematics/`](03-reduced-order-modeling/data-free-reduced-kinematics/): Klann linkage and cloth-ball subspaces |
 | 5 | [04 Neural ODEs](04-neural-odes/) | [Chen+ 2018] Neural ODE · [Wiewel+ 2019] Latent-space physics | |
 | 6 | [05 Graph neural networks](05-graph-neural-networks/) | [Sanchez-Gonzalez+ 2020] GNS · [Allen+ 2022] Physical design with learned simulators | [`gnn/`](05-graph-neural-networks/gnn/): GNS on three colliding balls |
-| 7 | [06 Neural operators](06-neural-operators/) | [Li+ 2020] FNO · [Wu+ 2024] Transolver | [`fno/`](06-neural-operators/fno/): FNO on Burgers' equation, every tensor visualised |
+| 7 | [06 Neural operators](06-neural-operators/) | [Li+ 2020] FNO · [Wu+ 2024] Transolver | [`fno/`](06-neural-operators/fno/): FNO on Burgers' equation in 1D and 2D, every tensor visualised |
 | 8 | [07 Transformers](07-transformers/) | [Holzschuh+ 2025] PDE-Transformer | |
 | 11 | [08 Reconstructing physics](08-reconstructing-physics/) | [Li+ 2023] PAC-NeRF | |
 

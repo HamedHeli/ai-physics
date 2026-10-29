@@ -35,6 +35,9 @@ that the notebook [`fno_explained.ipynb`](fno/notebooks/fno_explained.ipynb) sho
 lifting, FFT, mode truncation, the spectral weights `R`, inverse FFT, the pointwise `W` path and the projection, with
 a worked numeric example for each step. It also covers zero-shot super-resolution (trained at 32 points, run at 256)
 and how the FNO relates to the adjoint method.
+[`fno2d_explained.ipynb`](fno/notebooks/fno2d_explained.ipynb) repeats it in 2D on a 64×64 velocity field
+(`64×64×4 → P → 64×64×8 → Fourier layers → Q → 64×64×2`), starting from an 8-number example of Fourier series and
+convolution.
 
 **FNO and the adjoint method.** They are not the same idea: the FNO is trained by ordinary backprop on input/output
 pairs and solves no adjoint equation. They meet in two places: (1) the FFT is unitary, so its adjoint is the inverse

@@ -35,17 +35,26 @@ def relative_l2(pred: Array, target: Array) -> Array:
     return jnp.linalg.norm(pred - target, axis=-1) / jnp.linalg.norm(target, axis=-1)
 
 
-def batch_loss(params: dict, a: Array, u: Array) -> Array:
-    """Mean relative L2 error over a batch, ``a, u: (B, N)``."""
-    return jnp.mean(relative_l2(jax.vmap(apply, in_axes=(None, 0))(params, a), u))
+def batch_loss(params: dict, a: Array, u: Array, apply_fn=apply) -> Array:
+    """Mean relative L2 error over a batch, ``a: (B, ...)``, ``u: (B, ...)``.
+
+    Each sample's prediction and target are flattened first, so the same loss
+    serves the 1D model (``u: (B, N)``) and the 2D one (``u: (B, n, n, 2)``).
+    """
+    pred = jax.vmap(apply_fn, in_axes=(None, 0))(params, a)
+    b = u.shape[0]
+    return jnp.mean(relative_l2(pred.reshape(b, -1), u.reshape(b, -1)))
 
 
 def train(params: dict, a: Array, u: Array, n_steps: int = 3000, batch_size: int = 32,
-          lr: float = 5e-3, seed: int = 0, snapshot_every: int = 100, log_every: int = 500):
+          lr: float = 5e-3, seed: int = 0, snapshot_every: int = 100, log_every: int = 500,
+          apply_fn=apply):
     """Adam on random mini-batches.
 
     Args:
-        a, u: Training inputs and targets on the training grid, ``(n_train, N)``.
+        a, u: Training inputs and targets on the training grid, ``(n_train, ...)``.
+        apply_fn: Forward pass ``(params, a) -> u`` for one sample
+            (:func:`src.model.apply` or :func:`src.model2d.apply`).
 
     Returns:
         ``(params, snapshots, snapshot_steps, losses)``: final parameters, a list
@@ -56,7 +65,7 @@ def train(params: dict, a: Array, u: Array, n_steps: int = 3000, batch_size: int
 
     @jax.jit
     def step(params, opt_state, a_b, u_b):
-        loss, grads = jax.value_and_grad(batch_loss)(params, a_b, u_b)
+        loss, grads = jax.value_and_grad(batch_loss)(params, a_b, u_b, apply_fn)
         updates, opt_state = opt.update(grads, opt_state)
         return optax.apply_updates(params, updates), opt_state, loss
 
@@ -74,6 +83,9 @@ def train(params: dict, a: Array, u: Array, n_steps: int = 3000, batch_size: int
     return params, snapshots, snap_steps, np.array(losses)
 
 
-def evaluate(params: dict, a: Array, u: Array) -> float:
+_batch_loss_jit = jax.jit(batch_loss, static_argnames="apply_fn")
+
+
+def evaluate(params: dict, a: Array, u: Array, apply_fn=apply) -> float:
     """Mean relative L2 error on a set of pairs, at whatever resolution they are given."""
-    return float(jax.jit(batch_loss)(params, a, u))
+    return float(_batch_loss_jit(params, a, u, apply_fn=apply_fn))
