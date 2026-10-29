@@ -37,3 +37,5 @@ A longer walk-through of both papers is in the project notes (`gnn-papers/week6-
 - ← [04 Neural ODEs](../04-neural-odes/): another learned time-stepper.
 - → [06 Neural operators](../06-neural-operators/): GNO-style operators and Transolver generalize message passing on
   meshes to learned, discretization-independent kernels and attention.
+- ↔ [09 One PDE, many ways](../09-one-pde-many-ways/): §6 runs a GNS-style simulator on the grid graph of Burgers,
+  next to every other method of the course.

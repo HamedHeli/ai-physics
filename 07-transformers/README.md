@@ -26,3 +26,5 @@ Week 8 also has the first project check-in.
 
 - ← [06 Neural operators](../06-neural-operators/): Transolver is attention on general meshes; PDE-Transformer is
   attention on grids at scale.
+- ↔ [09 One PDE, many ways](../09-one-pde-many-ways/): §8 uses Transolver's Physics-Attention on Burgers, next to an
+  FNO, next to every other method of the course.

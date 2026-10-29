@@ -28,3 +28,5 @@ boundary condition or coefficients and you train again.
   decoder of a reduced space.
 - → [06 Neural operators](../06-neural-operators/): from learning one solution to learning the map from inputs to
   solutions.
+- ↔ [09 One PDE, many ways](../09-one-pde-many-ways/): §3 trains a PINN with hard periodic and initial-condition
+  constraints on Burgers, next to every other method of the course.

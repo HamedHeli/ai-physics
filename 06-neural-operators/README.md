@@ -50,3 +50,5 @@ trustworthy in directions the training data covered (section 9 of the notebook s
 - ↔ [01 Differentiable simulation](../01-differentiable-simulation/): a trained FNO is a differentiable stand-in
   for the solver; gradients through it replace an adjoint solve, if they are accurate.
 - → [07 Transformers](../07-transformers/): PDE-Transformer scales attention-based surrogates further.
+- ↔ [09 One PDE, many ways](../09-one-pde-many-ways/): §7–8 train an FNO and a Transolver on the Burgers operator
+  `u(·,0) ↦ u(·,1)` and compare them, next to every other method of the course.

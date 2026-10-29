@@ -31,3 +31,5 @@ an ODE solver produces the trajectory.
   learned latent dynamics.
 - → [05 Graph neural networks](../05-graph-neural-networks/): GNS is also a learned time-stepper, but on particles
   and graphs instead of a single latent vector.
+- ↔ [09 One PDE, many ways](../09-one-pde-many-ways/): §5 learns a latent neural ODE in the POD space of Burgers, next
+  to every other method of the course.

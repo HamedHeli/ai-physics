@@ -39,3 +39,5 @@ identification.
   learned one and runs the same gradient-based design loop.
 - → [08 Reconstructing physics](../08-reconstructing-physics/): PAC-NeRF identifies material parameters by
   differentiating an MPM simulator of the DiffTaichi family.
+- ↔ [09 One PDE, many ways](../09-one-pde-many-ways/): §2 recovers the viscosity and the initial state of Burgers by
+  differentiating through the solver, next to every other method of the course.
