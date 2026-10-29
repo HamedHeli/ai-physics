@@ -26,6 +26,7 @@ flowchart LR
     subgraph U3["Unit III: generative AI"]
         REC["08 Reconstructing physics<br/>PAC-NeRF"]
     end
+    ALL(["09 One PDE, many ways<br/>Burgers solved by every method"])
 
     DS -- "gradients through the solver (adjoint)" --> ODE
     DS -- "gradients through a learned simulator" --> GNN
@@ -36,6 +37,7 @@ flowchart LR
     PINN -- "one solution u(x,t) → the whole solution operator" --> NO
     GNN -- "mesh-free message passing → global attention" --> NO
     NO -- "attention-based operators at scale" --> TF
+    ALL -.- DS & PINN & ROM & ODE & GNN & NO & TF
 
     click DS "01-differentiable-simulation/" "Differentiable simulation"
     click PINN "02-physics-informed-neural-networks/" "Physics-informed neural networks"
@@ -45,6 +47,7 @@ flowchart LR
     click NO "06-neural-operators/" "Neural operators"
     click TF "07-transformers/" "Transformers"
     click REC "08-reconstructing-physics/" "Reconstructing physics"
+    click ALL "09-one-pde-many-ways/" "One PDE, many ways"
 ```
 
 If the nodes are not clickable in your viewer (GitHub sometimes disables Mermaid links), use the table below.
@@ -61,6 +64,7 @@ If the nodes are not clickable in your viewer (GitHub sometimes disables Mermaid
 | 7 | [06 Neural operators](06-neural-operators/) | [Li+ 2020] FNO · [Wu+ 2024] Transolver | |
 | 8 | [07 Transformers](07-transformers/) | [Holzschuh+ 2025] PDE-Transformer | |
 | 11 | [08 Reconstructing physics](08-reconstructing-physics/) | [Li+ 2023] PAC-NeRF | |
+| all | [09 One PDE, many ways](09-one-pde-many-ways/) | cross-topic: 1D viscous Burgers solved with the methods of 01–07 | [`notebooks/`](09-one-pde-many-ways/notebooks/one_pde_many_ways.ipynb): spectral solver, adjoint inverse problems, PINN, POD-Galerkin, latent neural ODE, GNS, FNO and Transolver on the same data, compared |
 
 Week 1 is the course introduction, Weeks 9, 10 and 12 have no paper listed yet ("TBD" or project milestones), and
 Week 13 is final presentations. The optional textbook is Brunton & Kutz, *Data-Driven Science and Engineering:
@@ -84,6 +88,10 @@ A useful way to read the graph is to ask, for each paper, *what function the net
 - **The physics behind observations** (08): the unknowns are material parameters, recovered by fitting a
   differentiable simulator to video.
 
+[09 One PDE, many ways](09-one-pde-many-ways/) makes this list concrete: it takes a single equation (1D viscous
+Burgers) and solves it with 01–07 on the same data, so each method's accuracy, cost and "what is learned" can be
+compared side by side.
+
 ## Layout
 
 ```
@@ -98,9 +106,10 @@ A useful way to read the graph is to ask, for each paper, *what function the net
 │   └── gnn/                           code
 ├── 06-neural-operators/
 ├── 07-transformers/
-└── 08-reconstructing-physics/
+├── 08-reconstructing-physics/
+└── 09-one-pde-many-ways/              code (cross-topic)
 ```
 
 Code folders follow the same conventions: pure JAX (or NumPy) with no NN framework, a `src/` package, a
 `requirements.txt`, and notebooks or experiment scripts. New code for a paper goes inside that paper's topic
-folder.
+folder; work that compares several topics goes in a cross-topic folder like `09-one-pde-many-ways/`.

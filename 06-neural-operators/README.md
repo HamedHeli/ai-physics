@@ -34,3 +34,5 @@ The schedule page lists only FNO for Week 7; Transolver was announced as the sec
 - ← [05 Graph neural networks](../05-graph-neural-networks/): message passing on a mesh is a discretized kernel
   integral; Transolver replaces it with global attention over learned slices.
 - → [07 Transformers](../07-transformers/): PDE-Transformer scales attention-based surrogates further.
+- ↔ [09 One PDE, many ways](../09-one-pde-many-ways/): §7–8 train an FNO and a Transolver on the Burgers operator
+  `u(·,0) ↦ u(·,1)` and compare them, next to every other method of the course.

@@ -32,3 +32,5 @@ field or configuration, and the simulation runs in `z`.
 
 - ← [02 Physics-informed NNs](../02-physics-informed-neural-networks/): CROM's decoder is a neural field like INSR.
 - → [04 Neural ODEs](../04-neural-odes/): once you have a latent space, learn the dynamics in it (Wiewel+ 2019).
+- ↔ [09 One PDE, many ways](../09-one-pde-many-ways/): §4 builds a POD-Galerkin model of Burgers and shows why linear
+  subspaces struggle with fronts, next to every other method of the course.
