@@ -122,3 +122,106 @@ def physics_attention_flow(block: dict, head: int, points, hole, title=""):
     fig.suptitle(title, fontsize=11)
     plt.tight_layout()
     return fig
+
+
+# --- Architecture diagram -----------------------------------------------------------------------------
+
+_POINTWISE, _GATHER, _ATTEND = "#4C78A8", "#F58518", "#54A24B"   # per point · sum over points · among slices
+
+
+def _tensor(ax, x, y, w, h, label, shape, color="0.85", fs=8):
+    """A tensor drawn as a box: height ~ rows (N tall, M short), width ~ channels. ``(x, y)`` is the centre."""
+    from matplotlib.patches import Rectangle
+    ax.add_patch(Rectangle((x - w / 2, y - h / 2), w, h, fc=color, ec="k", lw=1))
+    ax.text(x, y + h / 2 + 0.12, label, ha="center", va="bottom", fontsize=fs, weight="bold")
+    ax.text(x, y - h / 2 - 0.12, shape, ha="center", va="top", fontsize=fs - 1, family="monospace")
+
+
+def _arrow(ax, x0, y0, x1, y1, text="", color="k", fs=7.5, dy=0.12, rad=0.0):
+    from matplotlib.patches import FancyArrowPatch
+    ax.add_patch(FancyArrowPatch((x0, y0), (x1, y1), arrowstyle="-|>", mutation_scale=12, color=color, lw=1.6,
+                                 connectionstyle=f"arc3,rad={rad}"))
+    if text:
+        ax.text((x0 + x1) / 2, (y0 + y1) / 2 + dy, text, ha="center", va="bottom", fontsize=fs, color=color)
+
+
+def architecture_diagram(cfg, n_label="N"):
+    """Transolver drawn as tensors and the operations between them.
+
+    Top: the whole model (embed -> L blocks -> decode). Bottom: one Transolver
+    block opened up, head by head. Box height shows the number of rows: ``N``
+    (points) is tall, ``M`` (slices) is short, so the squeeze N -> M -> N of
+    Physics-Attention is visible. Arrow colours: blue = the same small matrix at
+    every row, orange = a weighted sum over points (slice / deslice), green =
+    attention among the M slice tokens.
+    """
+    C, H, d, M, L = cfg.width, cfg.heads, cfg.head_dim, cfg.slices, cfg.layers
+    N = n_label
+    fig, ax = plt.subplots(figsize=(17, 10.5))
+    ax.set_xlim(0, 17); ax.set_ylim(0, 10.5); ax.axis("off")
+    tall, short = 1.9, 0.55
+
+    # ---- top: the whole model ---------------------------------------------------------------------
+    ax.text(0.2, 10.2, "Transolver, whole model (B plates per batch, N points per plate)",
+            fontsize=12, weight="bold", va="top")
+    yt = 8.3
+    _tensor(ax, 1.2, yt, 0.45, tall, "input", f"(B, {N}, {cfg.in_dim})\nrows: points\ncols: x, y, d")
+    _arrow(ax, 1.55, yt, 3.45, yt, f"embed MLP\n{cfg.in_dim}→{2 * C}→{C}, GELU", _POINTWISE)
+    _tensor(ax, 4.0, yt, 0.9, tall, "x", f"(B, {N}, {C})\none row per point")
+    _arrow(ax, 4.55, yt, 6.35, yt, "", "k")
+    from matplotlib.patches import FancyBboxPatch
+    ax.add_patch(FancyBboxPatch((6.4, yt - 1.15), 4.2, 2.3, boxstyle="round,pad=0.05", fc="#F2F2F2", ec="k", lw=1.2))
+    ax.text(8.5, yt + 0.55, f"Transolver block × {L}", ha="center", fontsize=11, weight="bold")
+    ax.text(8.5, yt - 0.05, "x ← x + PhysicsAttention(LN(x))\nx ← x + MLP(LN(x))", ha="center", va="center",
+            fontsize=9, family="monospace")
+    ax.text(8.5, yt - 0.85, f"keeps the shape (B, {N}, {C})", ha="center", fontsize=8, style="italic")
+    _arrow(ax, 10.65, yt, 11.95, yt, "", "k")
+    _tensor(ax, 12.5, yt, 0.9, tall, "x", f"(B, {N}, {C})")
+    _arrow(ax, 13.05, yt, 15.0, yt, f"LN, then Linear\n{C}→1", _POINTWISE)
+    _tensor(ax, 15.5, yt, 0.2, tall, "u", f"(B, {N})\none temperature\nper point")
+    ax.plot([8.5, 8.5], [yt - 1.2, 6.25], color="0.5", ls=":", lw=1.2)
+    ax.text(8.6, 6.55, "open one block", fontsize=8, color="0.4")
+
+    # ---- bottom: one block, opened up ---------------------------------------------------------------
+    ax.text(0.2, 6.15, f"One Transolver block, opened up ({H} heads of d = {d} channels, M = {M} slices per head; "
+            "shapes for one plate; every tensor below exists once per head)", fontsize=12, weight="bold", va="top")
+    yb, yg = 3.75, 1.0          # main row (point features f) and lower row (slice-choice features g)
+    _tensor(ax, 0.75, yb, 0.9, tall, "LN(x)", f"({N}, {C})")
+    _arrow(ax, 1.25, yb, 2.45, yb, "W_fx, split\ninto heads", _POINTWISE)
+    _tensor(ax, 2.85, yb, 0.5, tall, "f", f"({N}, {d})")
+    _arrow(ax, 1.0, yb - 1.05, 2.45, yg, "", _POINTWISE)
+    ax.text(1.45, 1.55, "W_x, split\ninto heads", ha="right", fontsize=7.5, color=_POINTWISE)
+    _tensor(ax, 2.85, yg, 0.5, tall * 0.55, "g", f"({N}, {d})", fs=7.5)
+    _arrow(ax, 3.15, yg, 4.35, yg, "W_s, ÷τ,\nsoftmax over M", _POINTWISE, dy=-0.62)
+    _tensor(ax, 4.85, yg, 0.5, tall * 0.55, "w", f"({N}, {M})\neach row sums to 1", fs=7.5)
+
+    # slice: tokens = weighted averages of f with the columns of w
+    _arrow(ax, 3.15, yb, 5.8, yb, "slice: z_m = Σ_i w_im f_i / Σ_i w_im", _GATHER)
+    _arrow(ax, 5.12, yg + 0.3, 4.5, yb - 0.08, "", _GATHER)
+    _tensor(ax, 6.1, yb, 0.5, short, "z", f"({M}, {d})\nslice tokens")
+    _arrow(ax, 6.4, yb, 7.5, yb, "q, k, v = z W_q,\nz W_k, z W_v", _ATTEND)
+    _tensor(ax, 7.95, yb, 0.55, short, "A", f"({M}, {M})\nsoftmax(q kᵀ/√d)")
+    _arrow(ax, 8.3, yb, 9.35, yb, "z' = A v", _ATTEND)
+    _tensor(ax, 9.7, yb, 0.5, short, "z'", f"({M}, {d})\nupdated tokens")
+
+    # deslice: back to the points with the same w
+    _arrow(ax, 10.0, yb, 11.95, yb, "deslice:\nf'_i = Σ_m w_im z'_m", _GATHER)
+    ax.add_patch(__import__("matplotlib.patches", fromlist=["FancyArrowPatch"]).FancyArrowPatch(
+        (5.15, yg - 0.1), (12.0, yb - 0.75), arrowstyle="-|>", mutation_scale=12, color=_GATHER, lw=1.6, ls="--",
+        connectionstyle="arc3,rad=0.12"))
+    ax.text(8.6, 0.75, "the same w again", fontsize=7.5, color=_GATHER)
+    _tensor(ax, 12.3, yb, 0.5, tall, "f'", f"({N}, {d})")
+    _arrow(ax, 12.6, yb, 13.6, yb, "concat heads,\nW_o", _POINTWISE)
+    _tensor(ax, 14.05, yb, 0.9, tall, "out", f"({N}, {C})")
+    _arrow(ax, 14.55, yb, 15.55, yb, "+ x, then\n+ MLP(LN(·))", _POINTWISE)
+    _tensor(ax, 16.15, yb, 0.9, tall, "x", f"({N}, {C})")
+
+    # legend
+    for k, (c, t) in enumerate([(_POINTWISE, "same small matrix at every row (no point sees another)"),
+                                (_GATHER, "weighted sum over the N points (slice, deslice): the only N ↔ M step"),
+                                (_ATTEND, "attention among the M slice tokens: the only all-to-all step, M × M")]):
+        ax.plot([12.0, 12.5], [1.75 - 0.42 * k] * 2, color=c, lw=3)
+        ax.text(12.6, 1.75 - 0.42 * k, t, fontsize=8, va="center")
+    ax.text(12.0, 0.25, f"Box height = number of rows: {N} points (tall) vs M = {M} slices (short).", fontsize=8,
+            style="italic")
+    return fig

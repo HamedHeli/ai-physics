@@ -18,7 +18,7 @@ tensor of Physics-Attention fits on screen.
 1. the ground truth (`-Δu = f` on the plate, finite differences) and why an FFT-based FNO does not fit,
 2. what goes in (`N×3`: rows are points, columns are `x, y, d`) and what comes out (`N×1`, one temperature per
    point), and why the row order does not matter,
-3. the architecture with every shape (embed → 3 Transolver blocks → decode),
+3. the architecture with every shape (embed → 3 Transolver blocks → decode), as a table and as a diagram,
 4. one forward pass, tensor by tensor, with a worked numeric example checked against the code for each step:
    embedding, LayerNorm, **slice weights** (softmax over `M` slices), **slice tokens** (weighted averages over
    points), **attention among the slices**, **deslice** back to the points, MLP, decoder, plus the `N²` vs `N·M`
@@ -57,7 +57,7 @@ transolver/
 │   ├── physics.py     L-shaped plate with a hole: random holes, sparse finite-difference solver, point clouds
 │   ├── model.py       Transolver (embed, Physics-Attention blocks, decoder); apply_with_trace returns every tensor
 │   ├── training.py    relative L2 loss, AdamW one-cycle loop with snapshots, evaluation on any N
-│   └── visualize.py   annotated heatmaps, fields and slice maps on the plate, the Physics-Attention flow figure
+│   └── visualize.py   annotated heatmaps, fields and slice maps, the Physics-Attention flow and architecture figures
 ├── notebooks/
 │   └── transolver_explained.ipynb
 └── requirements.txt
