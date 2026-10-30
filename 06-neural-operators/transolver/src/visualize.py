@@ -225,3 +225,67 @@ def architecture_diagram(cfg, n_label="N"):
     ax.text(12.0, 0.25, f"Box height = number of rows: {N} points (tall) vs M = {M} slices (short).", fontsize=8,
             style="italic")
     return fig
+
+
+# --- What a hidden layer does: lines, ReLU, sums -------------------------------------------------------
+
+def hidden_layer_intuition(hole=(0.3, 0.2, 0.09), margin=0.1, n_grid=161):
+    """Hand-built neurons on the L-plate, with ``(x, y)`` as the only inputs.
+
+    Row 1: five layer-1 neurons ``h_k = ReLU(R - n_k . (p - c))``. Each one is a
+    line across the plate; ReLU keeps only the side facing the hole (value 0 on
+    the other side), and the value grows with the distance from the line.
+    Row 2: the five answers summed (weights -1, plus a bias, then ReLU) give
+    "inside all five lines" = close to the hole. One more layer-1 neuron asks
+    "near the bottom edge?". A layer-2 neuron combines the two answers into
+    "close to the hole AND near the edge" = ``ReLU(A + B - 1)``.
+
+    Returns the figure.
+    """
+    from .physics import in_L
+    cx, cy, r = hole
+    R = r + margin
+    s = np.linspace(0, 1, n_grid)
+    X, Y = np.meshgrid(s, s)
+    plate_mask = (~((X > 0.5) & (Y > 0.5))) & (np.hypot(X - cx, Y - cy) >= r)
+    show = lambda v: np.where(plate_mask, v, np.nan)
+    angles = np.pi / 2 + 2 * np.pi * np.arange(5) / 5
+    normals = np.c_[np.cos(angles), np.sin(angles)]
+    h = [np.maximum(R - (nx * (X - cx) + ny * (Y - cy)), 0) for nx, ny in normals]
+    total = sum(h)                                   # = 5R inside the pentagon, larger outside
+    delta = 0.1
+    A = np.maximum(5 * R + delta - total, 0) / delta  # "close to the hole", 1 inside, 0 far away
+    B = np.maximum(0.2 - Y, 0) / 0.2                 # "near the bottom edge"
+    AND = np.maximum(A + B - 1, 0)                   # layer 2: both answers yes
+
+    def panel(ax, v, title, cmap="Blues", vmax=None, lines=()):
+        ax.imshow(show(v), origin="lower", extent=(0, 1, 0, 1), cmap=cmap, vmin=0, vmax=vmax)
+        plate(ax, hole)
+        for nx, ny in lines:   # the line n . (p - c) = R, drawn across the plate
+            t = np.linspace(-2, 2, 2)
+            px, py = cx + R * nx - t * ny, cy + R * ny + t * nx
+            ax.plot(px, py, color="tab:red", lw=1.2)
+        ax.set_xlim(-0.03, 1.03); ax.set_ylim(-0.03, 1.03)
+        ax.set_title(title, fontsize=9)
+
+    fig, axes = plt.subplots(2, 5, figsize=(17, 8.4), gridspec_kw=dict(hspace=0.35))
+    for k, (ax, hk) in enumerate(zip(axes[0], h)):
+        nx, ny = normals[k]
+        panel(ax, hk, f"layer 1, neuron {k + 1}\nReLU({R:.2f} − ({nx:+.2f}·(x−{cx}) {ny:+.2f}·(y−{cy})))",
+              lines=[normals[k]])
+    panel(axes[1, 0], total, "sum of the 5 answers\n(flat inside the pentagon, grows outside)", "viridis",
+          lines=normals)
+    panel(axes[1, 1], A, "A = ReLU(bias − sum)\n\"close to the hole?\"", lines=normals)
+    panel(axes[1, 2], B, "B = ReLU(0.2 − y) / 0.2\n\"near the bottom edge?\" (one more line)")
+    panel(axes[1, 3], AND, "layer 2: ReLU(A + B − 1)\n\"close to the hole AND near the edge?\"", "Oranges")
+    ax = axes[1, 4]; ax.axis("off")
+    ax.text(0, 0.95, "How to read it\n\n"
+            "• Each layer-1 neuron draws one straight\n  line (red) and asks \"which side, and\n  how far?\". ReLU zeroes the other side.\n\n"
+            "• Width: more neurons = more lines =\n  more questions about the same input.\n  Five lines make a pentagon that\n  approximates the round hole.\n\n"
+            "• Depth: a layer-2 neuron draws lines in\n  the space of layer-1 answers (A, B), so\n  it can ask follow-ups like A AND B.\n\n"
+            "• White = 0: the neuron is off there.",
+            fontsize=8.5, va="top", family="sans-serif")
+    fig.suptitle("What a hidden layer does: lines, ReLU, and sums (hand-picked weights, inputs x and y only)",
+                 fontsize=12)
+    fig.subplots_adjust(left=0.02, right=0.98, top=0.9, bottom=0.02, wspace=0.08)
+    return fig
