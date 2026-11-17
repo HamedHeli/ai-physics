@@ -1,0 +1,17 @@
+loaded 1 Abaqus curve(s)
+  phi=4.95 mm  delta=1.0 mm  d=0.202  tau0=0.12 s  peak=0.0127  end=0.007467
+calibration K=1.779 n0=0.964; Table-1 QLV vs Abaqus rel L2 = 2.65e-03; classical LSQ g = [0.344 0.485 0.126]
+DeepONet      N=   16  test median rel L2 7.13%  OOD 15.94%  (9s)
+DeepONet      N=   64  test median rel L2 2.77%  OOD 5.01%  (28s)
+DeepONet      N=  256  test median rel L2 1.70%  OOD 3.39%  (145s)
+DeepONet      N= 1024  test median rel L2 1.59%  OOD 3.39%  (617s)
+QLV-DeepONet  N=   16  test median rel L2 0.71%  OOD 2.83%  (8s)
+QLV-DeepONet  N=   64  test median rel L2 0.45%  OOD 1.46%  (23s)
+QLV-DeepONet  N=  256  test median rel L2 0.43%  OOD 1.42%  (114s)
+QLV-DeepONet  N= 1024  test median rel L2 0.36%  OOD 1.31%  (463s)
+surrogate forward: 0.07 ms per curve (Abaqus: ~10 h)
+[real inverse, DeepONet] g = [0.386 0.481 0.043] (all free, 1.0s), [0.368 0.491 0.043] (alpha known)   Table 1: [0.33 0.48 0.13]
+[real inverse, QLV-DeepONet] g = [0.341 0.487 0.11 ] (all free, 1.4s), [0.322 0.493 0.109] (alpha known)   Table 1: [0.33 0.48 0.13]
+[synthetic inverse, DeepONet] median errors: {'μ (rel. err)': 0.1155, 'α (abs. err)': 0.0647, 'g₁ (abs. err)': 0.0779, 'g₂ (abs. err)': 0.0524, 'g₃ (abs. err)': 0.2224}
+[synthetic inverse, QLV-DeepONet] median errors: {'μ (rel. err)': 0.0391, 'α (abs. err)': 0.0975, 'g₁ (abs. err)': 0.0236, 'g₂ (abs. err)': 0.0216, 'g₃ (abs. err)': 0.0584}
+wrote results.json and figures/

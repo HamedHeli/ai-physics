@@ -48,6 +48,15 @@ step, then trains the model, tests the paper's "slices are physical states" clai
 mostly learned soft regions; the geometry travels through the slice tokens), evaluates the same weights on 32 to
 2000 points, checks the PDE residual of the prediction, and ends with Transolver++ and an FNO vs Transolver table.
 
+[`DeepONet/`](DeepONet/): the course project. It builds a surrogate of a 10-hour Abaqus simulation of
+ramp-and-hold flat-punch indentation on a quasi-linear viscoelastic (QLV) material (Helisaz, Bacca & Chiao,
+*Exp. Mech.* 2022), then inverts it to recover the Prony coefficients from a measured curve. It compares two
+models. A black-box **DeepONet** (branch on the parameters, trunk on time) learns everything from data. A
+**QLV-DeepONet** has a trunk made of the exact, differentiable Prony convolution, so only the elastic indentation
+law is learned. Trained on 16 curves, the QLV-DeepONet is more accurate (0.7% error) than the DeepONet trained on
+1024 (1.6%). From the real Abaqus curve alone it recovers g = 0.32 / 0.49 / 0.11, against the true 0.33 / 0.48 /
+0.13, in about 1 s. Training curves are synthetic until more Abaqus runs are added (see its README).
+
 **FNO and the adjoint method.** They are not the same idea: the FNO is trained by ordinary backprop on input/output
 pairs and solves no adjoint equation. They meet in two places: (1) the FFT is unitary, so its adjoint is the inverse
 FFT and backprop through a Fourier layer is another Fourier layer; (2) a trained FNO is a cheap differentiable
